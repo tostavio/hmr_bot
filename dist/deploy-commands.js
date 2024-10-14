@@ -32,14 +32,21 @@ const path = __importStar(require("path"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config(); // Carrega as variáveis do arquivo .env
 const commands = [];
+// Função para ajustar caminho dependendo do ambiente (src ou dist)
+const getCommandsPath = () => {
+    const isDist = __dirname.includes("dist");
+    return isDist
+        ? path.join(__dirname, "commands") // Usar a pasta 'commands' dentro de 'dist' em produção
+        : path.join(__dirname, "commands"); // Usar 'commands' no desenvolvimento com ts-node
+};
 // Carregar comandos dinamicamente da pasta commands
-const commandsPath = path.join(__dirname, "commands");
+const commandsPath = getCommandsPath();
 const commandFiles = fs
     .readdirSync(commandsPath)
-    .filter((file) => file.endsWith(".ts"));
+    .filter((file) => file.endsWith(__dirname.includes("dist") ? ".js" : ".ts"));
 for (const file of commandFiles) {
     const command = require(path.join(commandsPath, file));
-    commands.push(command.data.toJSON());
+    commands.push(command.data.toJSON()); // Aqui precisamos do toJSON para serializar corretamente
 }
 // Inicializando a REST API para registrar os comandos
 const rest = new discord_js_1.REST({ version: "10" }).setToken(process.env.BOT_TOKEN);
@@ -52,6 +59,6 @@ const rest = new discord_js_1.REST({ version: "10" }).setToken(process.env.BOT_T
         console.log("Comandos registrados com sucesso!");
     }
     catch (error) {
-        console.error(error);
+        console.error("Erro ao registrar comandos:", error);
     }
 })();

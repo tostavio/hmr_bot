@@ -43,11 +43,18 @@ const client = new ExtendedClient({
         discord_js_1.GatewayIntentBits.GuildVoiceStates,
     ],
 });
+// Função para ajustar caminho dependendo do ambiente (src ou dist)
+const getCommandsPath = () => {
+    const isDist = __dirname.includes("dist");
+    return isDist
+        ? path.join(__dirname, "commands") // Usar a pasta 'commands' dentro de 'dist' em produção
+        : path.join(__dirname, "commands"); // Usar 'commands' no desenvolvimento com ts-node
+};
 // Carregar comandos dinamicamente da pasta commands
-const commandsPath = path.join(__dirname, "commands");
+const commandsPath = getCommandsPath();
 const commandFiles = fs
     .readdirSync(commandsPath)
-    .filter((file) => file.endsWith(".ts"));
+    .filter((file) => file.endsWith(__dirname.includes("dist") ? ".js" : ".ts"));
 for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
     const command = require(filePath);

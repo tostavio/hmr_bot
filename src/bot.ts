@@ -15,6 +15,7 @@ dotenv.config(); // Carrega as variáveis do arquivo .env
 interface Command {
   data: {
     name: string;
+    toJSON: () => any; // Adiciona o método toJSON para os comandos
   };
   execute: (interaction: any) => Promise<void>;
 }
@@ -33,11 +34,19 @@ const client = new ExtendedClient({
   ],
 });
 
+// Função para ajustar caminho dependendo do ambiente (src ou dist)
+const getCommandsPath = () => {
+  const isDist = __dirname.includes("dist");
+  return isDist
+    ? path.join(__dirname, "commands") // Usar a pasta 'commands' dentro de 'dist' em produção
+    : path.join(__dirname, "commands"); // Usar 'commands' no desenvolvimento com ts-node
+};
+
 // Carregar comandos dinamicamente da pasta commands
-const commandsPath = path.join(__dirname, "commands");
+const commandsPath = getCommandsPath();
 const commandFiles = fs
   .readdirSync(commandsPath)
-  .filter((file) => file.endsWith(".ts"));
+  .filter((file) => file.endsWith(__dirname.includes("dist") ? ".js" : ".ts"));
 
 for (const file of commandFiles) {
   const filePath = path.join(commandsPath, file);
