@@ -28,13 +28,11 @@ async function execute(interaction) {
         });
         return;
     }
-    // Se for um canal de texto, verifique se ele está associado a um canal de voz na mesma categoria
     let targetChannel = channel;
     if (channel instanceof discord_js_1.TextChannel && channel.parent) {
-        // Aqui, acessamos a cache para encontrar o canal de voz
         const voiceChannel = channel.parent.children.cache.find((ch) => ch.type === discord_js_1.ChannelType.GuildVoice);
         if (voiceChannel) {
-            targetChannel = voiceChannel; // Associa o canal de voz encontrado ao targetChannel
+            targetChannel = voiceChannel;
         }
         else {
             await interaction.reply({
@@ -44,7 +42,6 @@ async function execute(interaction) {
             return;
         }
     }
-    // Verifica se o canal alvo é de voz
     if (!(targetChannel instanceof discord_js_1.VoiceChannel)) {
         await interaction.reply({
             content: "O canal selecionado não é um canal de voz válido.",
@@ -52,7 +49,6 @@ async function execute(interaction) {
         });
         return;
     }
-    // Processa a lógica para os membros no canal de voz
     const members = targetChannel.members; // Obtém os membros do canal de voz
     const voiceUserIds = members.map((member) => member.id);
     // Chama a API do Raid Helper para buscar dados do evento
@@ -67,7 +63,6 @@ async function execute(interaction) {
     const eventUserIds = eventData.signUps
         .filter((signUp) => signUp.status === "primary")
         .map((signUp) => signUp.userId);
-    // Comparar listas de IDs
     const usersInVoiceAndEvent = voiceUserIds.filter((id) => eventUserIds.includes(id));
     const usersInVoiceNotInEvent = voiceUserIds.filter((id) => !eventUserIds.includes(id));
     const usersInEventNotInVoice = eventUserIds.filter((id) => !voiceUserIds.includes(id));
@@ -81,19 +76,23 @@ async function execute(interaction) {
         return `<@${id}>`; // Caso o membro não esteja disponível
     })
         .join("\n") || "Nenhum";
-    const eventUrl = `https://raid-helper.dev/event/${eventId}`; // URL do evento no Raid Helper
-    const embed = (0, embedBuilder_1.createEmbed)("Comparação de Usuários", `Canal: <#${targetChannel.id}>` // Marcação do canal
-    );
-    embed.addFields({
-        name: `Usuários no canal e inscritos (${usersInVoiceAndEvent.length}):`,
-        value: formatUsers(usersInVoiceAndEvent),
-    }, {
-        name: `Usuários no canal mas NÃO inscritos (${usersInVoiceNotInEvent.length}):`,
-        value: formatUsers(usersInVoiceNotInEvent),
-    }, {
-        name: `Usuários inscritos mas NÃO no canal (${usersInEventNotInVoice.length}):`,
-        value: usersInEventNotInVoice.length.toString(),
-    });
-    embed.setFooter({ text: `Evento: ${eventUrl}` }); // Adiciona a URL do evento no footer
+    const eventUrl = `https://raid-helper.dev/event/${eventId}`;
+    // Montagem dos campos para o embed
+    const fields = [
+        {
+            name: `Usuários no canal e inscritos (${usersInVoiceAndEvent.length}):`,
+            value: formatUsers(usersInVoiceAndEvent),
+        },
+        {
+            name: `Usuários no canal mas NÃO inscritos (${usersInVoiceNotInEvent.length}):`,
+            value: formatUsers(usersInVoiceNotInEvent),
+        },
+        {
+            name: `Usuários inscritos mas NÃO no canal (${usersInEventNotInVoice.length}):`,
+            value: usersInEventNotInVoice.length.toString(),
+        },
+    ];
+    // Criação do embed com a URL do evento e marcação do canal
+    const embed = (0, embedBuilder_1.createEmbed)("Comparação de Usuários", `Canal: <#${targetChannel.id}>\nEvento: [Clique aqui](${eventUrl})`, fields);
     await interaction.reply({ embeds: [embed] });
 }

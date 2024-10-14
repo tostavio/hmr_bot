@@ -3,18 +3,33 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createEmbed = createEmbed;
 const discord_js_1 = require("discord.js");
 /**
- * Função para gerar uma cor aleatória.
+ * Cria um embed com um título e descrição.
+ * Ele adiciona automaticamente os campos e faz a divisão de texto, se necessário.
  */
-function getRandomColor() {
-    return Math.floor(Math.random() * 0xffffff);
+function createEmbed(title, description, fields, maxLength = 1024) {
+    const embed = new discord_js_1.EmbedBuilder().setTitle(title).setDescription(description);
+    // Para cada campo, verifica e divide se o valor ultrapassar o limite
+    fields.forEach((field) => {
+        const parts = splitText(field.value, maxLength);
+        parts.forEach((part, index) => {
+            embed.addFields({
+                name: index === 0 ? field.name : `${field.name} [Parte ${index + 1}]`,
+                value: part,
+            });
+        });
+    });
+    return embed;
 }
 /**
- * Função para criar um embed com título e descrição, com cor aleatória.
+ * Divide um texto em partes menores para evitar ultrapassar o limite de caracteres.
  */
-function createEmbed(title, description) {
-    const embed = new discord_js_1.EmbedBuilder()
-        .setTitle(title)
-        .setDescription(description)
-        .setColor(getRandomColor()); // Define a cor aleatória
-    return embed;
+function splitText(text, maxLength = 1024) {
+    const parts = [];
+    while (text.length > maxLength) {
+        const slice = text.slice(0, maxLength);
+        parts.push(slice);
+        text = text.slice(maxLength);
+    }
+    parts.push(text);
+    return parts;
 }
