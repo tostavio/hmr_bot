@@ -4,10 +4,13 @@ exports.createEmbed = createEmbed;
 const discord_js_1 = require("discord.js");
 /**
  * Cria um embed com um título e descrição.
- * Ele adiciona automaticamente os campos e faz a divisão de texto, se necessário.
+ * Ele adiciona automaticamente os campos, faz a divisão de texto, se necessário, e atribui uma cor aleatória.
  */
 function createEmbed(title, description, fields, maxLength = 1024) {
-    const embed = new discord_js_1.EmbedBuilder().setTitle(title).setDescription(description);
+    const embed = new discord_js_1.EmbedBuilder()
+        .setTitle(title)
+        .setDescription(description)
+        .setColor(getRandomColor()); // Atribui uma cor aleatória
     // Para cada campo, verifica e divide se o valor ultrapassar o limite
     fields.forEach((field) => {
         const parts = splitText(field.value, maxLength);
@@ -32,4 +35,11 @@ function splitText(text, maxLength = 1024) {
     }
     parts.push(text);
     return parts;
+}
+/**
+ * Gera uma cor aleatória para o embed.
+ */
+function getRandomColor() {
+    // Gera uma cor hexadecimal aleatória
+    return Math.floor(Math.random() * 0xffffff);
 }

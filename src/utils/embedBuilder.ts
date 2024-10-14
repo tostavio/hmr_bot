@@ -2,7 +2,7 @@ import { EmbedBuilder } from "discord.js";
 
 /**
  * Cria um embed com um título e descrição.
- * Ele adiciona automaticamente os campos e faz a divisão de texto, se necessário.
+ * Ele adiciona automaticamente os campos, faz a divisão de texto, se necessário, e atribui uma cor aleatória.
  */
 export function createEmbed(
   title: string,
@@ -10,7 +10,10 @@ export function createEmbed(
   fields: { name: string; value: string }[],
   maxLength = 1024
 ): EmbedBuilder {
-  const embed = new EmbedBuilder().setTitle(title).setDescription(description);
+  const embed = new EmbedBuilder()
+    .setTitle(title)
+    .setDescription(description)
+    .setColor(getRandomColor()); // Atribui uma cor aleatória
 
   // Para cada campo, verifica e divide se o valor ultrapassar o limite
   fields.forEach((field) => {
@@ -38,4 +41,12 @@ function splitText(text: string, maxLength = 1024): string[] {
   }
   parts.push(text);
   return parts;
+}
+
+/**
+ * Gera uma cor aleatória para o embed.
+ */
+function getRandomColor(): number {
+  // Gera uma cor hexadecimal aleatória
+  return Math.floor(Math.random() * 0xffffff);
 }
