@@ -1,41 +1,36 @@
-import { REST, Routes, SlashCommandBuilder } from "discord.js";
-import * as dotenv from "dotenv";
-dotenv.config();
+import { REST, Routes } from "discord.js";
+import * as fs from "fs";
+import * as path from "path";
+import dotenv from "dotenv";
 
-const CLIENT_ID = process.env.CLIENT_ID || "";
-const TOKEN = process.env.BOT_TOKEN || "";
+dotenv.config(); // Carrega as variáveis do arquivo .env
 
-const commands = [
-  new SlashCommandBuilder()
-    .setName("checkraid")
-    .setDescription(
-      "Compara usuários no canal de voz com inscritos em um evento do Raid Helper."
-    )
-    .addChannelOption((option) =>
-      option
-        .setName("canal")
-        .setDescription("Selecione um canal.")
-        .setRequired(true)
-    )
-    .addStringOption((option) =>
-      option
-        .setName("evento_id")
-        .setDescription("ID do evento no Raid Helper.")
-        .setRequired(true)
-    )
-    .toJSON(),
-];
+const commands: any[] = [];
 
-const rest = new REST({ version: "10" }).setToken(TOKEN);
+// Carregar comandos dinamicamente da pasta commands
+const commandsPath = path.join(__dirname, "commands");
+const commandFiles = fs
+  .readdirSync(commandsPath)
+  .filter((file) => file.endsWith(".ts"));
+
+for (const file of commandFiles) {
+  const command = require(path.join(commandsPath, file));
+  commands.push(command.data.toJSON());
+}
+
+// Inicializando a REST API para registrar os comandos
+const rest = new REST({ version: "10" }).setToken(process.env.BOT_TOKEN!);
 
 (async () => {
   try {
-    console.log("Registrando comandos de aplicação...");
+    console.log("Atualizando os comandos manualmente.");
 
-    await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
+    await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {
+      body: commands,
+    });
 
-    console.log("Comandos registrados com sucesso.");
+    console.log("Comandos registrados com sucesso!");
   } catch (error) {
-    console.error("Erro ao registrar comandos:", error);
+    console.error(error);
   }
 })();

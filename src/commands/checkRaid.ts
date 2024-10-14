@@ -27,13 +27,13 @@ export const data = new SlashCommandBuilder()
   );
 
 export async function execute(interaction: CommandInteraction) {
-  const channel = interaction.options.get("canal")?.channel; // Usando get() para recuperar a opção de canal
-  const eventId = interaction.options.get("evento_id")?.value as string; // Garantindo que evento_id é string
+  const channel = interaction.options.get("canal")?.channel; // Obtém o canal da interação
+  const eventId = interaction.options.get("evento_id")?.value as string; // Obtém o ID do evento
 
-  // Verificar se o canal existe e é um canal de voz ou texto
+  // Verifica se o canal existe e é de texto ou de voz
   if (
     !channel ||
-    !(channel instanceof TextChannel || channel instanceof VoiceChannel)
+    !(channel instanceof VoiceChannel || channel instanceof TextChannel)
   ) {
     await interaction.reply({
       content: "Por favor, selecione um canal de voz ou texto válido.",
@@ -42,26 +42,37 @@ export async function execute(interaction: CommandInteraction) {
     return;
   }
 
-  // Se for um canal de texto, verificar se ele está associado a um canal de voz
+  // Se for um canal de texto, verifique se ele está associado a um canal de voz na mesma categoria
   let targetChannel = channel;
-  if (
-    channel instanceof TextChannel &&
-    channel.parent &&
-    channel.parent.type === ChannelType.GuildVoice
-  ) {
-    targetChannel = channel.parent as VoiceChannel;
+  if (channel instanceof TextChannel && channel.parent) {
+    // Aqui, acessamos a cache para encontrar o canal de voz
+    const voiceChannel = channel.parent.children.cache.find(
+      (ch): ch is VoiceChannel => ch.type === ChannelType.GuildVoice
+    );
+
+    if (voiceChannel) {
+      targetChannel = voiceChannel; // Associa o canal de voz encontrado ao targetChannel
+    } else {
+      await interaction.reply({
+        content:
+          "Este canal de texto não está associado a nenhum canal de voz.",
+        ephemeral: true,
+      });
+      return;
+    }
   }
 
-  // Verificar se o canal alvo é de voz
+  // Verifica se o canal alvo é de voz
   if (!(targetChannel instanceof VoiceChannel)) {
     await interaction.reply({
-      content: "Este comando só pode ser usado em canais de voz.",
+      content: "O canal selecionado não é um canal de voz válido.",
       ephemeral: true,
     });
     return;
   }
 
-  const members = targetChannel.members;
+  // Processa a lógica para os membros no canal de voz
+  const members = targetChannel.members; // Obtém os membros do canal de voz
   const voiceUserIds = members.map((member) => member.id);
 
   // Chama a API do Raid Helper para buscar dados do evento

@@ -1,19 +1,37 @@
-import { Client, GatewayIntentBits, Collection } from "discord.js";
+import {
+  Client,
+  GatewayIntentBits,
+  Collection,
+  REST,
+  Routes,
+} from "discord.js";
 import * as fs from "fs";
 import * as path from "path";
 import dotenv from "dotenv";
 
 dotenv.config(); // Carrega as variáveis do arquivo .env
 
-const client = new Client({
+// Definição do tipo para o comando
+interface Command {
+  data: {
+    name: string;
+  };
+  execute: (interaction: any) => Promise<void>;
+}
+
+// Subclasse do Client para adicionar a propriedade `commands`
+class ExtendedClient extends Client {
+  public commands: Collection<string, Command> = new Collection();
+}
+
+// Instancia o cliente usando a nova subclasse
+const client = new ExtendedClient({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildVoiceStates,
   ],
 });
-
-client.commands = new Collection<string, any>();
 
 // Carregar comandos dinamicamente da pasta commands
 const commandsPath = path.join(__dirname, "commands");
@@ -23,13 +41,34 @@ const commandFiles = fs
 
 for (const file of commandFiles) {
   const filePath = path.join(commandsPath, file);
-  const command = require(filePath);
+  const command: Command = require(filePath);
   client.commands.set(command.data.name, command);
 }
 
+// Função para atualizar os comandos na API do Discord
+async function deployCommands() {
+  const commands = [];
+  for (const file of commandFiles) {
+    const command = require(path.join(commandsPath, file));
+    commands.push(command.data.toJSON());
+  }
+
+  const rest = new REST({ version: "10" }).setToken(process.env.BOT_TOKEN!);
+  try {
+    console.log("Atualizando os comandos na API do Discord.");
+    await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {
+      body: commands,
+    });
+    console.log("Comandos registrados com sucesso!");
+  } catch (error) {
+    console.error("Erro ao registrar comandos:", error);
+  }
+}
+
 // Quando o bot estiver pronto
-client.once("ready", () => {
+client.once("ready", async () => {
   console.log(`Bot logado como ${client.user?.tag}`);
+  await deployCommands(); // Chama a função de atualização de comandos ao iniciar o bot
 });
 
 // Listener para interações

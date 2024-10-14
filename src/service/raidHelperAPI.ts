@@ -1,9 +1,10 @@
 import axios from "axios";
+import { EventResponse } from "./raidHelper.types";
 
 export async function getRaidHelperEventData(eventId: string) {
   const raidHelperApiToken = process.env.RAID_HELPER_API_TOKEN;
   try {
-    const response = await axios.get(
+    const response = await axios.get<EventResponse>(
       `https://raid-helper.dev/api/v2/events/${eventId}`,
       {
         headers: {
