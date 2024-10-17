@@ -26,10 +26,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.userVoiceTimes = void 0;
 const discord_js_1 = require("discord.js");
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const config_1 = require("./database/config");
 dotenv_1.default.config(); // Carrega as variáveis do arquivo .env
 // Subclasse do Client para adicionar a propriedade `commands`
 class ExtendedClient extends discord_js_1.Client {
@@ -40,8 +42,41 @@ const client = new ExtendedClient({
     intents: [
         discord_js_1.GatewayIntentBits.Guilds,
         discord_js_1.GatewayIntentBits.GuildMembers,
+        discord_js_1.GatewayIntentBits.GuildModeration,
+        discord_js_1.GatewayIntentBits.GuildEmojisAndStickers,
+        discord_js_1.GatewayIntentBits.GuildIntegrations,
+        discord_js_1.GatewayIntentBits.GuildWebhooks,
+        discord_js_1.GatewayIntentBits.GuildInvites,
         discord_js_1.GatewayIntentBits.GuildVoiceStates,
+        discord_js_1.GatewayIntentBits.GuildPresences,
+        discord_js_1.GatewayIntentBits.GuildMessages,
+        discord_js_1.GatewayIntentBits.GuildMessageReactions,
+        discord_js_1.GatewayIntentBits.GuildMessageTyping,
+        discord_js_1.GatewayIntentBits.DirectMessages,
+        discord_js_1.GatewayIntentBits.DirectMessageReactions,
+        discord_js_1.GatewayIntentBits.DirectMessageTyping,
+        discord_js_1.GatewayIntentBits.MessageContent,
     ],
+});
+// Mapa para armazenar quando um usuário entrou no canal de voz
+exports.userVoiceTimes = new Map();
+// Listener para trackear entrada e saída de canais de voz
+client.on("voiceStateUpdate", (oldState, newState) => {
+    const memberId = newState.id;
+    // Se o usuário entrou no canal de voz
+    if (!oldState.channel && newState.channel) {
+        exports.userVoiceTimes.set(memberId, Date.now()); // Armazena o timestamp de entrada
+        console.log(`Usuário ${memberId} entrou no canal de voz às ${new Date().toLocaleString()}`);
+    }
+    // Se o usuário saiu do canal de voz
+    if (oldState.channel && !newState.channel) {
+        const joinedTime = exports.userVoiceTimes.get(memberId);
+        if (joinedTime) {
+            const duration = (Date.now() - joinedTime) / 1000; // Duração em segundos
+            console.log(`${newState.member?.user.tag} ficou ${duration} segundos no canal.`);
+            exports.userVoiceTimes.delete(memberId); // Remove o usuário do mapa após sair do canal
+        }
+    }
 });
 // Função para ajustar caminho dependendo do ambiente (src ou dist)
 const getCommandsPath = () => {
@@ -58,7 +93,13 @@ const commandFiles = fs
 for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
     const command = require(filePath);
-    client.commands.set(command.data.name, command);
+    // Verificação adicional para garantir que o comando tenha a estrutura esperada
+    if (command && command.data && command.data.name) {
+        client.commands.set(command.data.name, command);
+    }
+    else {
+        console.error(`Erro ao carregar o comando no arquivo ${file}.`);
+    }
 }
 // Função para atualizar os comandos na API do Discord
 async function deployCommands() {
@@ -82,6 +123,7 @@ async function deployCommands() {
 // Quando o bot estiver pronto
 client.once("ready", async () => {
     console.log(`Bot logado como ${client.user?.tag}`);
+    (0, config_1.syncDatabase)();
     await deployCommands(); // Chama a função de atualização de comandos ao iniciar o bot
 });
 // Listener para interações
