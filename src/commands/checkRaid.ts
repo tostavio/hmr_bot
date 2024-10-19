@@ -90,24 +90,24 @@ async function execute(interaction: CommandInteraction) {
 
     // Cria embed com os resultados da comparação
     const fields = [
-      {
-        name: `Usuários no canal e inscritos (${usersInVoiceAndEvent.length}):`,
-        value: await formatUsers(
-          usersInVoiceAndEvent,
-          members,
-          eventData,
-          interaction
-        ),
-      },
-      {
-        name: `Usuários no canal mas NÃO inscritos (${usersInVoiceNotInEvent.length}):`,
-        value: await formatUsers(
-          usersInVoiceNotInEvent,
-          members,
-          eventData,
-          interaction
-        ),
-      },
+      // {
+      //   name: `Usuários no canal e inscritos (${usersInVoiceAndEvent.length}):`,
+      //   value: await formatUsers(
+      //     usersInVoiceAndEvent,
+      //     members,
+      //     eventData,
+      //     interaction
+      //   ),
+      // },
+      // {
+      //   name: `Usuários no canal mas NÃO inscritos (${usersInVoiceNotInEvent.length}):`,
+      //   value: await formatUsers(
+      //     usersInVoiceNotInEvent,
+      //     members,
+      //     eventData,
+      //     interaction
+      //   ),
+      // },
       {
         name: `Usuários inscritos mas NÃO no canal (${usersInEventNotInVoice.length}):`,
         value: await formatUsers(
