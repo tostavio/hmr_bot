@@ -6,6 +6,10 @@ async function compareUsersInChannelAndEvent(voiceChannel, eventId) {
     const members = voiceChannel.members;
     const voiceUserIds = members.map((member) => member.id);
     const eventData = await (0, raidHelperAPI_1.getRaidHelperEventData)(eventId);
+    if ("error" in eventData) {
+        console.error("[ERROR] Erro ao buscar dados do evento:", eventData);
+        return null;
+    }
     if (!eventData || !eventData.signUps)
         return null;
     const eventUserIds = eventData.signUps

@@ -55,6 +55,14 @@ async function execute(interaction: CommandInteraction) {
 
   const usersDkp = await getRaidHelperDkpData(roleId, guildId);
 
+  if ("error" in usersDkp) {
+    await interaction.reply({
+      content: "Não foi possível obter os dados de DKP.",
+      ephemeral: true,
+    });
+    return;
+  }
+
   if (!usersDkp) {
     await interaction.reply({
       content: "Não foi possível obter os dados de DKP.",

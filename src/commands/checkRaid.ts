@@ -61,6 +61,7 @@ async function execute(interaction: CommandInteraction) {
       targetChannel,
       eventId
     );
+
     if (!comparisonData) {
       console.error("[ERROR] Evento não encontrado ou sem participantes.");
       await initialMessage?.edit({

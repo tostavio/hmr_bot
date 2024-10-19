@@ -1,7 +1,13 @@
 import axios from "axios";
-import { DkpResponse, EventResponse } from "./raidHelper.types";
+import { Dkp, DkpResponse, EventResponse } from "./raidHelper.types";
 
-export async function getRaidHelperEventData(eventId: string) {
+// Define um tipo que pode ser os dados esperados ou o erro
+type ApiError = { error: string; details: unknown };
+
+// Função para obter dados de um evento
+export async function getRaidHelperEventData(
+  eventId: string
+): Promise<EventResponse | ApiError> {
   const raidHelperApiToken = process.env.RAID_HELPER_API_TOKEN;
   try {
     const response = await axios.get<EventResponse>(
@@ -18,11 +24,15 @@ export async function getRaidHelperEventData(eventId: string) {
     return response.data;
   } catch (error) {
     console.error("Erro ao chamar a API do RaidHelper:", error);
-    throw new Error("Erro ao buscar dados do evento.");
+    return { error: "Erro ao buscar dados do evento", details: error };
   }
 }
 
-export async function getRaidHelperDkpData(roleId: string, guildId: string) {
+// Função para obter dados de DKP
+export async function getRaidHelperDkpData(
+  roleId: string,
+  guildId: string
+): Promise<Dkp[] | ApiError> {
   const raidHelperApiToken = process.env.RAID_HELPER_API_TOKEN;
   try {
     const response = await axios.get<DkpResponse>(
@@ -36,6 +46,27 @@ export async function getRaidHelperDkpData(roleId: string, guildId: string) {
     return response.data.result;
   } catch (error) {
     console.error("Erro ao chamar a API do RaidHelper:", error);
-    throw new Error("Erro ao buscar dados do DKP.");
+    return { error: "Erro ao buscar dados do DKP", details: error };
+  }
+}
+
+// Função para obter todos os eventos
+export async function getAllEvents(
+  guildId: string
+): Promise<EventResponse | ApiError> {
+  const raidHelperApiToken = process.env.RAID_HELPER_API_TOKEN;
+  try {
+    const response = await axios.get<EventResponse>(
+      `https://raid-helper.dev/api/v3/servers/${guildId}/events`,
+      {
+        headers: {
+          Authorization: `${raidHelperApiToken}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao chamar a API do RaidHelper:", error);
+    return { error: "Erro ao buscar eventos", details: error };
   }
 }

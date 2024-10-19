@@ -9,6 +9,10 @@ export async function compareUsersInChannelAndEvent(
   const voiceUserIds = members.map((member) => member.id);
 
   const eventData = await getRaidHelperEventData(eventId);
+  if ("error" in eventData) {
+    console.error("[ERROR] Erro ao buscar dados do evento:", eventData);
+    return null;
+  }
   if (!eventData || !eventData.signUps) return null;
 
   const eventUserIds = eventData.signUps
