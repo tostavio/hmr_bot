@@ -23,18 +23,21 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const discord_js_1 = require("discord.js");
-const dotenv = __importStar(require("dotenv"));
-const intents_1 = require("./config/intents");
-const eventHandler_1 = require("./handlers/eventHandler");
-dotenv.config();
-// Instanciar o cliente usando Client, mas tipar como ExtendedClient
-const client = new discord_js_1.Client({
-    intents: intents_1.intents,
-}); // Faz o casting para ExtendedClient
-// Inicializar a coleção de comandos no cliente
-client.commands = new discord_js_1.Collection();
-// Carregar eventos dinamicamente
-(0, eventHandler_1.loadEvents)(client);
-// Login do bot
-client.login(process.env.BOT_TOKEN);
+exports.loadEvents = loadEvents;
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
+function loadEvents(client) {
+    const eventsPath = path.join(__dirname, "../events");
+    const eventFiles = fs
+        .readdirSync(eventsPath)
+        .filter((file) => file.endsWith(".ts") || file.endsWith(".js"));
+    for (const file of eventFiles) {
+        const event = require(path.join(eventsPath, file)).default; // Carrega o `default` exportado pelo arquivo
+        if (event.once) {
+            client.once(event.name, (...args) => event.execute(...args));
+        }
+        else {
+            client.on(event.name, (...args) => event.execute(...args));
+        }
+    }
+}

@@ -134,3 +134,13 @@ export interface EventResponse {
   channelId: string;
   announcement?: Announcement;
 }
+
+export interface Dkp {
+  name: string;
+  dkp: string; // Keeping this as string as per the provided JSON
+  id: string;
+}
+
+export interface DkpResponse {
+  result: Dkp[];
+}
