@@ -135,9 +135,32 @@ export interface EventResponse {
   announcement?: Announcement;
 }
 
+export interface PostedEvent {
+  id: string;
+  title: string;
+  description: string;
+  leaderId: string;
+  leaderName: string;
+  color: string;
+  startTime: number;
+  endTime: number;
+  closeTime: number;
+  imageUrl?: string;
+  signUpCount?: string;
+  channelId: string;
+}
+
+export interface EventsResponse {
+  pages: number;
+  eventsOverall: number;
+  eventsTransmitted: number;
+  currentPage: number;
+  postedEvents: PostedEvent[];
+}
+
 export interface Dkp {
   name: string;
-  dkp: string; // Keeping this as string as per the provided JSON
+  dkp: string; // Mantendo como string conforme o JSON
   id: string;
 }
 

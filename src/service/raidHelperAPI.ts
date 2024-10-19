@@ -1,5 +1,10 @@
 import axios from "axios";
-import { Dkp, DkpResponse, EventResponse } from "./raidHelper.types";
+import {
+  Dkp,
+  DkpResponse,
+  EventResponse,
+  EventsResponse,
+} from "./raidHelper.types";
 
 // Define um tipo que pode ser os dados esperados ou o erro
 type ApiError = { error: string; details: unknown };
@@ -53,10 +58,10 @@ export async function getRaidHelperDkpData(
 // Função para obter todos os eventos
 export async function getAllEvents(
   guildId: string
-): Promise<EventResponse | ApiError> {
+): Promise<EventsResponse | ApiError> {
   const raidHelperApiToken = process.env.RAID_HELPER_API_TOKEN;
   try {
-    const response = await axios.get<EventResponse>(
+    const response = await axios.get<EventsResponse>(
       `https://raid-helper.dev/api/v3/servers/${guildId}/events`,
       {
         headers: {
