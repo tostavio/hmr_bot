@@ -52,6 +52,8 @@ async function deployCommands(client) {
     const commands = loadCommands(client); // Carrega os comandos dinamicamente
     const rest = new discord_js_1.REST({ version: "10" }).setToken(process.env.BOT_TOKEN);
     try {
+        console.log("Limpando comandos antigos...");
+        // await clearOldCommands(); // Limpa os comandos antigos
         console.log("Atualizando os comandos na API do Discord.");
         await rest.put(discord_js_1.Routes.applicationCommands(process.env.CLIENT_ID), {
             body: commands,

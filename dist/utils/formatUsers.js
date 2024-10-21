@@ -20,7 +20,7 @@ async function formatUsers(userIds, members, eventData, interaction) {
             return `${discordMember.displayName} - ${(0, formatters_1.userMention)(discordMember.id)}`;
         }
         const signUpUser = eventData.signUps.find((signUp) => signUp.id === Number(id));
-        return `${signUpUser?.name || "Usuário desconhecido"} - ${(0, formatters_1.userMention)(id)}`;
+        return `${signUpUser?.name || "Usuário desconhecido"} - <@${id}>`;
     })
         .join("\n") || "Nenhum");
 }

@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import dotenv from "dotenv";
 import { ExtendedClient } from "../types/ExtendedClient";
+import { clearOldCommands } from "../utils/clearOldCommands";
 
 dotenv.config(); // Carrega as variáveis do arquivo .env
 
@@ -30,6 +31,9 @@ export async function deployCommands(client: ExtendedClient) {
   const rest = new REST({ version: "10" }).setToken(process.env.BOT_TOKEN!);
 
   try {
+    console.log("Limpando comandos antigos...");
+    // await clearOldCommands(); // Limpa os comandos antigos
+
     console.log("Atualizando os comandos na API do Discord.");
 
     await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {

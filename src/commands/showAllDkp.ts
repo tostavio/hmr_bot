@@ -4,13 +4,18 @@ import { sendUsersDkpMessage } from "../utils/sendUsersDkpMessage";
 import { isTextChannel } from "../utils/verifyChannel";
 
 const data = new SlashCommandBuilder()
-  .setName("checkalldkp")
-  .setDescription("Exibe o dkp de todos as pessoas de um cargo")
-  .addRoleOption((option) =>
-    option
-      .setName("role")
-      .setDescription("Selecione uma role.")
-      .setRequired(true)
+  .setName("dkp") // Primary command
+  .setDescription("Comandos de DKP")
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName("show") // Subcommand
+      .setDescription("Exibe o dkp de todas as pessoas de um cargo")
+      .addRoleOption((option) =>
+        option
+          .setName("role")
+          .setDescription("Selecione uma role.")
+          .setRequired(true)
+      )
   );
 
 async function execute(interaction: CommandInteraction) {
@@ -36,14 +41,6 @@ async function execute(interaction: CommandInteraction) {
 
   // Check if the interaction channel is a text-based channel before sending a message
   const interactionChannel = interaction.channel;
-
-  if (!isTextChannel(interactionChannel)) {
-    await interaction.reply({
-      content: "Por favor, use canal de texto válido.",
-      ephemeral: true,
-    });
-    return;
-  }
 
   if (!isTextChannel(interactionChannel)) {
     await interaction.reply({

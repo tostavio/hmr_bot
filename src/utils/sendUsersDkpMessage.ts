@@ -5,48 +5,48 @@ export async function sendUsersDkpMessage(
   usersDkp: Dkp[],
   interaction: CommandInteraction
 ) {
-  // Responder à interação imediatamente
   await interaction.reply({
     content: "Listando DKP...",
     ephemeral: true,
   });
 
   const channel = interaction.channel;
-  if (channel instanceof TextChannel) {
-    let messagePart = "";
-    const maxCharacters = 2000;
-    const longestMentionLength = Math.max(
-      ...usersDkp.map(
-        (user, index) => `${index + 1}. <@${user.id}> | ${user.name}`.length
-      )
-    );
-
-    const sortedUsersDkp = usersDkp.sort(
-      (a, b) => parseFloat(b.dkp) - parseFloat(a.dkp)
-    );
-
-    sortedUsersDkp.forEach((user, index) => {
-      const userMention = `<@${user.id}> | ${user.name}`;
-      // Construir a linha de exibição com o nome e o DKP na linha debaixo
-      const messageToSend = `${index + 1}. ${userMention}\n╰┈➤ **${
-        user.dkp
-      }**\n\n`;
-
-      // Se adicionar a próxima menção ultrapassar o limite de caracteres, envia a mensagem atual
-      if (messagePart.length + messageToSend.length > maxCharacters) {
-        channel.send(messagePart); // Enviar a mensagem no canal
-        messagePart = ""; // Reseta a mensagem para continuar
-      }
-
-      messagePart += messageToSend;
-    });
-
-    // Envia a última parte, se não tiver sido enviada
-    if (messagePart.length > 0) {
-      channel.send(messagePart);
-    }
+  if (!(channel instanceof TextChannel)) {
+    await interaction.editReply({ content: "Utilize um canal de texto" });
     return;
   }
-  await interaction.editReply({ content: "Utilize um canal de texto" });
-  return;
+
+  let messagePart = "";
+  const maxCharacters = 2000;
+
+  const sortedUsersDkp = usersDkp.sort(
+    (a, b) => parseFloat(b.dkp) - parseFloat(a.dkp)
+  );
+
+  for (let index = 0; index < sortedUsersDkp.length; index++) {
+    const user = sortedUsersDkp[index];
+
+    if (parseFloat(user.dkp) === 0) {
+      const usersWithZeroDkp = usersDkp.length - index;
+      messagePart += `+ ${usersWithZeroDkp} usuários com **0** DKP\n\n`;
+      await channel.send(messagePart);
+      return; // Agora interrompe a execução da função inteira
+    }
+
+    const userMention = `<@${user.id}> | ${user.name}`;
+    const messageToSend = `${index + 1}. ${userMention}\n╰┈➤ **${parseFloat(
+      user.dkp
+    )}**\n\n`;
+
+    if (messagePart.length + messageToSend.length > maxCharacters) {
+      await channel.send(messagePart);
+      messagePart = "";
+    }
+
+    messagePart += messageToSend;
+  }
+
+  if (messagePart.length > 0) {
+    await channel.send(messagePart);
+  }
 }

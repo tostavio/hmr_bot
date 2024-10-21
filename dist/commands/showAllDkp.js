@@ -5,12 +5,15 @@ const raidHelperAPI_1 = require("../service/raidHelperAPI");
 const sendUsersDkpMessage_1 = require("../utils/sendUsersDkpMessage");
 const verifyChannel_1 = require("../utils/verifyChannel");
 const data = new discord_js_1.SlashCommandBuilder()
-    .setName("checkalldkp")
-    .setDescription("Exibe o dkp de todos as pessoas de um cargo")
+    .setName("dkp") // Primary command
+    .setDescription("Comandos de DKP")
+    .addSubcommand((subcommand) => subcommand
+    .setName("show") // Subcommand
+    .setDescription("Exibe o dkp de todas as pessoas de um cargo")
     .addRoleOption((option) => option
     .setName("role")
     .setDescription("Selecione uma role.")
-    .setRequired(true));
+    .setRequired(true)));
 async function execute(interaction) {
     console.log("[LOG] Comando iniciado.");
     const roleId = interaction.options.get("role")?.value;
@@ -31,13 +34,6 @@ async function execute(interaction) {
     }
     // Check if the interaction channel is a text-based channel before sending a message
     const interactionChannel = interaction.channel;
-    if (!(0, verifyChannel_1.isTextChannel)(interactionChannel)) {
-        await interaction.reply({
-            content: "Por favor, use canal de texto válido.",
-            ephemeral: true,
-        });
-        return;
-    }
     if (!(0, verifyChannel_1.isTextChannel)(interactionChannel)) {
         await interaction.reply({
             content: "Por favor, use canal de texto válido.",

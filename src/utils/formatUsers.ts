@@ -32,9 +32,7 @@ export async function formatUsers(
         const signUpUser = eventData.signUps.find(
           (signUp) => signUp.id === Number(id)
         );
-        return `${signUpUser?.name || "Usuário desconhecido"} - ${userMention(
-          id
-        )}`;
+        return `${signUpUser?.name || "Usuário desconhecido"} - <@${id}>`;
       })
       .join("\n") || "Nenhum"
   );
